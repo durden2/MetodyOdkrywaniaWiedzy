@@ -146,7 +146,7 @@ with open('air.csv', 'r') as csvFile:
     csvFile.seek(0)
     next(reader, None)  # skip the headers
 
-    newRows.append(['DATE', 'DEW', 'PM', 'TEMP', 'PRESS', 'LWS', 'LS', 'LR', 'NE', 'NW', 'SE'])
+    newRows.append(['DATE', 'DEW', 'PM', 'TEMP', 'PRESS', 'LWS', 'LS', 'LR'])
     for row in reader:
         tempRow = []
         tempRow.append(parseDate(row[O_YEAR] + "/" + row[O_MONTH] + "/" + row[O_DAY] + " " + row[O_HOUR]))
@@ -159,7 +159,7 @@ with open('air.csv', 'r') as csvFile:
         tempRow.append((float(row[O_LWS]) - minLWS) / (maxLWS - minLWS))
         tempRow.append((float(row[O_LS]) - minLS) / (maxLS - minLS))
         tempRow.append((float(row[O_LR]) - minLR) / (maxLR - minLR))
-        writeWindDirection(tempRow, row[O_WINDIR])
+        #   writeWindDirection(tempRow, row[O_WINDIR])
         newRows.append(tempRow)
 
     saveToFile(newRows)
