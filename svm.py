@@ -21,22 +21,40 @@ df.dropna(inplace=True)
 
 X = np.array(df.drop(['PM', 'DATE', 'LS', 'LWS', 'LR'], 1))
 y = np.array(df['PM'])
-windowSize = 36
+windowSize = 144
 
 #X_train2, X_test2, y_train2, y_test2 = train_test_split(X, y, test_size=0.2)
+i = 0
 
-#create test date variables
-X_test = X[1:len(X):36]
-y_test = y[1:len(y):36]
+X_test = np.array([[1,1,1]])
+y_test = np.array([1])
 
-#remove training data from training sets
-np.delete(X, np.arange(1, len(X), 36))
-np.delete(X, np.arange(1, len(X), 36))
+while i < len(X) - windowSize:
+    #create test date variables
+    idx = list(range(i, i + 24))
+    X_test = np.append(X_test, X[idx], axis=0)
+    y_test = np.append(y_test, y[idx])
+    i += windowSize + 24
 
+i = 0
+
+newX = np.array([[1, 1, 1]])
+newY = np.array([1])
+
+while i < len(X) - windowSize:
+    #create test date variables
+    idx = list(range(i, i + windowSize))
+    newX = np.append(newX, X[idx], axis=0)
+    newY = np.append(newY, y[idx])
+    i += windowSize + 24
+
+
+X = newX
+y = newY
 
 for z in range(1, 20):
 
-    clf = svm.SVC(kernel='linear', gamma=0.001)
+    clf = svm.SVC(kernel='linear', gamma=z * 10, C=z)
     i = 2;
     while i < len(X) - windowSize:
         idx = list(range(i, i + windowSize))
@@ -47,11 +65,9 @@ for z in range(1, 20):
         clf.fit(trainTemp, ytemp)
 
     confidence = clf.score(X_test, y_test)
-    print("Gamma: ", 10 / z, " C: ", 10 / z)
+    print("Gamma: ", 10 * z, " C: ", z)
     print("Confidence: ", confidence)
 
-d = clf.predict(X[3:6]);
-print(d)
 
 for z in range(1, 20):
 
