@@ -1,41 +1,89 @@
 import pandas as pd
 import numpy as np
 from scipy import sparse
+import math
+import datetime
+import matplotlib.pyplot as plt
+from matplotlib import style
 df = pd.read_csv("new.csv")
 
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
+style.use('ggplot')
+
 from sklearn import svm
+
+from sklearn import preprocessing, cross_validation, svm
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from sklearn import preprocessing
+from sklearn import datasets, linear_model
 
-y = df['PM']
-X = df.drop(['PM'], axis = 1)
-X = df.drop(['DATE'], axis = 1)
+df.dropna(inplace=True)
+
+X = np.array(df.drop(['PM', 'DATE', 'LS', 'LWS', 'LR'], 1))
+y = np.array(df['PM'])
+windowSize = 36
+
+#X_train2, X_test2, y_train2, y_test2 = train_test_split(X, y, test_size=0.2)
+
+#create test date variables
+X_test = X[1:len(X):36]
+y_test = y[1:len(y):36]
+
+#remove training data from training sets
+np.delete(X, np.arange(1, len(X), 36))
+np.delete(X, np.arange(1, len(X), 36))
 
 
-X_train, X_test, y_train, y_test = train_test_split(X, y,test_size=0.2)
+for z in range(1, 20):
 
-lab_enc = preprocessing.LabelEncoder()
+    clf = svm.SVC(kernel='linear', gamma=0.001)
+    i = 2;
+    while i < len(X) - windowSize:
+        idx = list(range(i, i + windowSize))
+        i = i + windowSize;
+        trainTemp = X[idx]
+        ytemp = y[idx]
 
-X_test = lab_enc.fit_transform(X_test)
-X_train = lab_enc.fit_transform(X_train)
-y_train = lab_enc.fit_transform(y_train)
-y_test = lab_enc.fit_transform(y_test)
+        clf.fit(trainTemp, ytemp)
 
+    confidence = clf.score(X_test, y_test)
+    print("Gamma: ", 10 / z, " C: ", 10 / z)
+    print("Confidence: ", confidence)
 
-# print("\nX_train:\n")
-# print(X_train.head())
-# print(X_train.shape)
-# print ("\nX_test:\n")
-# print(X_test.head())
-# print (X_test.shape)
+d = clf.predict(X[3:6]);
+print(d)
 
-#Assumed you have, X (predictor) and Y (target) for training data set and x_test(predictor) of test_dataset
-# Create SVM classification object
-model = svm.SVC(C=1.0, cache_size=200, coef0=0.0, degree=3, gamma='auto', kernel='rbf', max_iter=-1, shrinking=True, tol=0.001, verbose=False)
-# there is various option associated with it, like changing kernel, gamma and C value. Will discuss more # about it in next section.Train the model using the training sets and check score
-model.fit(X_train, y_train)
-model.score(X_train, y_train)
-#Predict Output
-predicted= model.predict(X_test)
+for z in range(1, 20):
 
-print(predicted)
+    clf = svm.SVC(kernel='rbf', gamma=0.01, C=100)
+    i = 2;
+    while i < len(X) - windowSize:
+        idx = list(range(i, i + windowSize))
+        i = i + windowSize;
+        trainTemp = X[idx]
+        ytemp = y[idx]
+
+        clf.fit(trainTemp, ytemp)
+
+    confidence = clf.score(X_test, y_test)
+    print("Gamma: ", z/1000, " C: ", z / 100)
+    print("Confidence: ", confidence)
+
+d = clf.predict(X[3:6]);
+print(d)
+
+forecast_col = 'PM'
+df.fillna(value=-99999, inplace=True)
+forecast_out = int(math.ceil(0.01 * len(df)))
+df['PM'] = df[forecast_col].shift(-forecast_out)
+X_lately = X[-forecast_out:]
+X = X[:-forecast_out]
+forecast_set = clf.predict(X_lately)
+
+plt.plot(forecast_set)
+plt.legend(loc=4)
+plt.xlabel('Data')
+plt.ylabel('PM')
+plt.show()
+
+print(predictions)

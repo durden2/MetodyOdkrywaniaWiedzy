@@ -153,7 +153,7 @@ with open('air.csv', 'r') as csvFile:
         if row[O_PM] == 'NA': continue
 
         tempRow.append((float(row[O_DEW_POINT]) - minDew) / (maxDew - minDew))
-        tempRow.append((float(row[O_PM]) - minPM) / (maxPM - minPM))
+        tempRow.append(float(row[O_PM]))
         tempRow.append((float(row[O_TEMP]) - minTemp) / (maxTemp - minTemp))
         tempRow.append((float(row[O_PRESS]) - minPress) / (maxPress - minPress))
         tempRow.append((float(row[O_LWS]) - minLWS) / (maxLWS - minLWS))

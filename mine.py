@@ -48,9 +48,9 @@ def classification_model(model, data, predictors, outcome):
     # Fit the model again so that it can be refered outside the function:
     model.fit(data[predictors], data[outcome])
 
-outcome_var = 'NE'
+outcome_var = 'PM'
 model = DecisionTreeClassifier()
-predictor_var = ['SE', 'NW']
+predictor_var = ['TEMP', 'PRESS', 'DEW']
 classification_model(model, df,predictor_var,outcome_var)
 
 # data_final_vars=df.columns.values.tolist()
