@@ -17,11 +17,11 @@ from sklearn import datasets, linear_model
 
 df.dropna(inplace=True)
 
-X = np.array(df.drop(['PM', 'DATE', 'NE', 'NW', 'SE'], 1))
+X = np.array(df.drop(['PM', 'DATE'], 1))
 y = np.array(df['PM'])
 
-windowSize = 72
-window_test_size = 24
+windowSize = 144
+window_test_size = 6
 
 # X_train2, X_test2, y_train2, y_test2 = train_test_split(X, y, test_size=0.2)
 # clf = svm.NuSVR(kernel='rbf', gamma=0.03, nu=0.05)
@@ -32,7 +32,7 @@ window_test_size = 24
 
 i = windowSize
 
-X_test = np.array([[0,0,0,0,0,0]])
+X_test = np.array([[0,0,0,0,0,0,0,0,0]])
 y_test = np.array([0])
 
 while i < len(df) - windowSize:
@@ -44,7 +44,7 @@ while i < len(df) - windowSize:
 
 i = 0
 
-newX = np.array([[0,0,0,0,0,0]])
+newX = np.array([[0,0,0,0,0,0,0,0,0]])
 newY = np.array([0])
 
 while i < len(df) - windowSize:
@@ -60,19 +60,28 @@ y = newY
 
 dane = np.array([0, 0, 0], ndmin=2)
 
-for z in range(50, 51):
-    for j in range(50, 51):
+for z in [0.8, 0.6, 0.4, 0.2, 0.1, 0.08, 0.06, 0.04, 0.02, 0.01]:
+    for j in [0.5, 0.4, 0.3, 0.2, 0.1, 0.08, 0.06, 0.04, 0.02, 0.01]:
 
-        clf = svm.NuSVR(kernel='rbf', gamma=(z / 100), nu=(j / 100))
-        i = 0;
+        clf = svm.NuSVR(kernel='rbf', gamma=z, nu=j)
         clf.fit(X, y)
 
         confidence = clf.score(X_test, y_test)
         #print("Gamma: ", z / 100, " NU: ", j / 100)
-        dane = np.append(dane, [z / 100, j / 100, confidence]);
-        print("Confidence: ", confidence)
+        dane = np.append(dane, [z,  j, confidence]);
+        forecast_set = clf.predict(X[1:])
 
-print(dane)
+        i = 0;
+        data = np.array([0]);
+        while i < len(y) - 1:
+            data = np.append(data, (abs(y[i] - forecast_set[i])))
+            i += 1
+
+        print("Confidence: ", confidence, " Gamma: ", z, " NU: ", j, " error mean: ", np.mean(data))
+
+
+
+#print(dane)
 # for z in range(1, 20):
 #
 #     clf = svm.SVC(kernel='rbf')
@@ -94,11 +103,10 @@ forecast_col = 'PM'
 df.fillna(value=-99999, inplace=True)
 forecast_out = int(math.ceil(0.01 * len(df)))
 df['PM'] = df[forecast_col].shift(-forecast_out)
+
 X_lately = X[-forecast_out:]
 X = X[:-forecast_out]
 forecast_set = clf.predict(X[1:200])
-
-print(forecast_set)
 
 plt.plot(forecast_set)
 plt.legend(loc=4)
