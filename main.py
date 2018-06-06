@@ -146,20 +146,28 @@ with open('air.csv', 'r') as csvFile:
     csvFile.seek(0)
     next(reader, None)  # skip the headers
 
-    newRows.append(['DATE', 'DEW', 'PM', 'TEMP', 'PRESS', 'LWS', 'LS', 'LR'])
+    maxPM = maxValueInColumn(getColumnValues(reader, O_PM));
+    csvFile.seek(0)
+    next(reader, None)  # skip the headers
+
+    minPM = minValueInColumn(getColumnValues(reader, O_PM));
+    csvFile.seek(0)
+    next(reader, None)  # skip the headers
+
+    newRows.append(['DATE', 'DEW', 'PM', 'TEMP', 'PRESS', 'LWS', 'LS', 'LR', 'NE', 'NW', 'SE'])
     for row in reader:
         tempRow = []
         tempRow.append(parseDate(row[O_YEAR] + "/" + row[O_MONTH] + "/" + row[O_DAY] + " " + row[O_HOUR]))
         if row[O_PM] == 'NA': continue
 
         tempRow.append((float(row[O_DEW_POINT]) - minDew) / (maxDew - minDew))
-        tempRow.append(float(row[O_PM]))
+        tempRow.append((float(row[O_PM]) - minPM) / (maxPM - minPM))
         tempRow.append((float(row[O_TEMP]) - minTemp) / (maxTemp - minTemp))
         tempRow.append((float(row[O_PRESS]) - minPress) / (maxPress - minPress))
         tempRow.append((float(row[O_LWS]) - minLWS) / (maxLWS - minLWS))
         tempRow.append((float(row[O_LS]) - minLS) / (maxLS - minLS))
         tempRow.append((float(row[O_LR]) - minLR) / (maxLR - minLR))
-        #   writeWindDirection(tempRow, row[O_WINDIR])
+        writeWindDirection(tempRow, row[O_WINDIR])
         newRows.append(tempRow)
 
     saveToFile(newRows)
